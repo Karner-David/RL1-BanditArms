@@ -45,8 +45,9 @@ class BaseAgent:
 
     def update(self, a, r):
         """Sample-average update"""
-        # TODO: implement incremental mean update
-        pass
+        self.N[a] += 1
+        lr = 1 / self.N[a]
+        self.Q[a] += (lr * (r - self.Q[a]))
 
 class EpsilonGreedy(BaseAgent):
     def __init__(self, K, epsilon=0.1):
