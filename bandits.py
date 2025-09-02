@@ -56,7 +56,14 @@ class EpsilonGreedy(BaseAgent):
 
     def select_action(self, t):
         # TODO: epsilon-greedy selection
-        pass
+        rand_val = np.random.rand()
+        if rand_val < self.eps:
+            return np.random.randint(0, self.K)
+        else:
+            # have to get the arm with the highest Q but have to make it random so it doesn't bias lower indexed arms
+            max_Q = np.max(self.Q)
+            max_indxs = np.where(self.Q == max_Q)[0]
+            return np.random.choice(max_indxs)
 
 class OptimisticGreedy(BaseAgent):
     def __init__(self, K, q0=1.0):
@@ -65,7 +72,9 @@ class OptimisticGreedy(BaseAgent):
 
     def select_action(self, t):
         # TODO: pick greedy action (argmax Q)
-        pass
+        max_Q = np.max(self.Q)
+        max_indxs = np.where(self.Q == max_Q)[0]
+        return np.random.choice(max_indxs)
 
 class SoftmaxAgent(BaseAgent):
     def __init__(self, K, tau=0.1):
@@ -74,7 +83,16 @@ class SoftmaxAgent(BaseAgent):
 
     def select_action(self, t):
         # TODO: implement Boltzmann exploration
-        pass
+        logits = self.Q / self.tau
+        max_logit = np.max(logits)
+        logits = logits - max_logit
+        probs = np.exp(logits) / np.sum(np.exp(logits))
+        rand = np.random.uniform()
+        for i, prob in enumerate(probs):
+            rand -= prob
+            if rand <= 0:
+                return i
+        return self.K - 1
 
 # ------------------ Experiment ------------------
 def run_experiment(agent_class, agent_kwargs, num_runs=2000, T=1000, K=10):
